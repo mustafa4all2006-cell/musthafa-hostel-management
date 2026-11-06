@@ -1,0 +1,51 @@
+[
+  {
+    "room_id": 101,
+    "room_no": "A-101",
+    "block_name": "Block A (CSE)",
+    "capacity": 2,
+    "status": "Available"
+  },
+  {
+    "room_id": 102,
+    "room_no": "A-102",
+    "block_name": "Block A (CSE)",
+    "capacity": 3,
+    "status": "Occupied"
+  },
+  {
+    "room_id": 201,
+    "room_no": "B-201",
+    "block_name": "Block B (CIVIL)",
+    "capacity": 4,
+    "status": "Available"
+  },
+  {
+    "room_id": 202,
+    "room_no": "B-202",
+    "block_name": "Block B (CIVIL)",
+    "capacity": 2,
+    "status": "Occupied"
+  },
+  {
+    "room_id": 301,
+    "room_no": "C-301",
+    "block_name": "Block-c(ECE)",
+    "capacity": 2,
+    "status": "Under Maintenance"
+  },
+  {
+    "room_id": 55,
+    "room_no": "a",
+    "block_name": "Block A (CSE)",
+    "capacity": 4,
+    "status": "Occupied"
+  },
+  {
+    "room_id": 3,
+    "room_no": "d",
+    "block_name": "Executive Wing",
+    "capacity": 6,
+    "status": "Available"
+  }
+]

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List Hostel Rooms</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">MUSTHAFA HM</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="list.html" class="active">📋 List Rooms</a>
+        <a href="listOne.html">🔍 Search Room</a>
+        <a href="insert.html">➕ Insert Room</a>
+        <a href="update.html">✏️ Update Room</a>
+        <a href="delete.html">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title-box">
+      <h1 class="page-title">📋 List of All Hostel Rooms</h1>
+      <p class="page-subtitle">View and monitor room allocations, capacities, and availability across all hostel blocks.</p>
+    </div>
+
+    <div class="card">
+      <!-- Toolbar Controls -->
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="loadRooms()">
+            🔄 Refresh List
+          </button>
+          <a href="insert.html" class="btn btn-success" style="background:#10b981;">
+            ➕ Add New Room
+          </a>
+        </div>
+
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+          <label style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Status Filter:</label>
+          <select id="statusFilter" class="form-control" style="width:auto; padding:0.5rem 0.75rem;" onchange="filterRooms()">
+            <option value="ALL">All Statuses</option>
+            <option value="Available">Available Only</option>
+            <option value="Occupied">Occupied Only</option>
+            <option value="Under Maintenance">Under Maintenance</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Responsive Table Container -->
+      <div class="table-responsive">
+        <table class="styled-table" id="roomTable">
+          <thead>
+            <tr>
+              <th>Room ID</th>
+              <th>Room No</th>
+              <th>Block Name</th>
+              <th>Capacity of Room</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="roomTableBody">
+            <!-- Data will be loaded dynamically here -->
+            <tr>
+              <td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">Loading rooms...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="btn-group" style="margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="location.href='index.html'">
+          ← Back to Home Page
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    let allRoomsCache = [];
+
+    // Load all rooms from API or fallback
+    async function loadRooms() {
+      try {
+        const rooms = await HostelAPI.getAllRooms();
+        allRoomsCache = rooms;
+        renderTable(allRoomsCache);
+        showToast(`Loaded ${rooms.length} rooms successfully`, 'info');
+      } catch (err) {
+        console.error('Error fetching rooms:', err);
+        showToast('Error loading rooms', 'error');
+      }
+    }
+
+    // Render table rows
+    function renderTable(rooms) {
+      const tbody = document.getElementById("roomTableBody");
+      
+      if (!rooms || rooms.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; padding:3rem; color:var(--text-muted);">
+              <div style="font-size:2rem; margin-bottom:0.5rem;">📭</div>
+              <strong>No hostel rooms found.</strong><br>
+              <span style="font-size:0.875rem;">Click "Add New Room" above to create one.</span>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      rooms.forEach(room => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong style="color:var(--primary);">#${room.room_id}</strong></td>
+            <td><span style="font-weight:600; color:#1e293b;">${room.room_no}</span></td>
+            <td>${room.block_name}</td>
+            <td><span class="capacity-pill">🛏️ ${room.capacity} Bed${room.capacity > 1 ? 's' : ''}</span></td>
+            <td>${renderStatusBadge(room.status)}</td>
+            <td style="text-align:right;">
+              <a href="update.html?id=${room.room_id}" class="btn btn-secondary" style="padding:0.35rem 0.65rem; font-size:0.8rem; margin-right:0.3rem;">✏️ Edit</a>
+              <button onclick="quickDelete(${room.room_id})" class="btn btn-danger" style="padding:0.35rem 0.65rem; font-size:0.8rem;">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Filter by status dropdown
+    function filterRooms() {
+      const filter = document.getElementById("statusFilter").value;
+      if (filter === "ALL") {
+        renderTable(allRoomsCache);
+      } else {
+        const filtered = allRoomsCache.filter(r => String(r.status).toLowerCase() === filter.toLowerCase());
+        renderTable(filtered);
+      }
+    }
+
+    // Quick delete directly from list
+    async function quickDelete(roomId) {
+      if (!confirm(`Are you sure you want to delete Room #${roomId}?`)) return;
+
+      const res = await HostelAPI.deleteRoom(roomId);
+      if (res.success) {
+        showToast(res.message, 'success', () => loadRooms());
+      } else {
+        showToast(res.message, 'error');
+      }
+    }
+
+    // Initial load on page ready
+    window.addEventListener('DOMContentLoaded', loadRooms);
+  </script>
+</body>
+</html>

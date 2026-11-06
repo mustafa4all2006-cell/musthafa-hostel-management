@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Hostel Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">MUSTHAFA HM</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="list.html">📋 List Rooms</a>
+        <a href="listOne.html">🔍 Search Room</a>
+        <a href="insert.html">➕ Insert Room</a>
+        <a href="update.html">✏️ Update Room</a>
+        <a href="delete.html" class="active">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title-box">
+      <h1 class="page-title">🗑️ Delete Hostel Room</h1>
+      <p class="page-subtitle">Safely remove a room record from the hostel registry by Room ID.</p>
+    </div>
+
+    <!-- Delete Action Card -->
+    <div class="card" style="max-width: 600px; margin: 0 auto 2rem auto; border-top: 4px solid var(--danger);">
+      <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1rem; color:#1e293b;">
+        Room Deletion Form
+      </h2>
+
+      <div class="form-group">
+        <label for="room_id">Room ID to Delete <span style="color:#ef4444;">*</span></label>
+        <div class="search-bar-container" style="max-width:100%;">
+          <input 
+            type="number" 
+            id="room_id" 
+            class="form-control" 
+            placeholder="Enter Room ID to delete (e.g. 101)"
+            oninput="checkPreview()"
+          >
+          <button type="button" class="btn btn-secondary" onclick="checkPreview()">
+            👁️ Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Card if found -->
+      <div id="deletePreview" style="display:none; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; padding:1.25rem; margin:1.25rem 0;">
+        <h3 style="font-size:0.95rem; font-weight:700; color:#991b1b; margin-bottom:0.75rem;">
+          ⚠️ Confirm Room to be Deleted:
+        </h3>
+        <div id="previewContent" style="font-size:0.9rem; color:#7f1d1d; line-height:1.6;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="btn-group" style="margin-top:1.5rem;">
+        <button type="button" class="btn btn-danger" onclick="deleteRoom()" id="deleteBtn">
+          🗑️ Permanently Delete Room
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="location.href='list.html'">
+          📋 View All Rooms
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="location.href='index.html'">
+          ← Home Page
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    async function checkPreview() {
+      const roomId = document.getElementById("room_id").value.trim();
+      const previewBox = document.getElementById("deletePreview");
+      const previewContent = document.getElementById("previewContent");
+
+      if (!roomId) {
+        previewBox.style.display = "none";
+        return;
+      }
+
+      const data = await HostelAPI.getRoomById(roomId);
+      if (data && data.length > 0) {
+        const room = data[0];
+        previewBox.style.display = "block";
+        previewContent.innerHTML = `
+          <strong>Room ID:</strong> #${room.room_id}<br>
+          <strong>Room No:</strong> ${room.room_no}<br>
+          <strong>Block Name:</strong> ${room.block_name}<br>
+          <strong>Capacity:</strong> ${room.capacity} Bed${room.capacity > 1 ? 's' : ''}<br>
+          <strong>Status:</strong> ${room.status}
+        `;
+      } else {
+        previewBox.style.display = "none";
+      }
+    }
+
+    async function deleteRoom() {
+      const roomId = document.getElementById("room_id").value.trim();
+
+      if (!roomId) {
+        showToast("Please enter a Room ID to delete.", "error");
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to delete Room #${roomId}? This action cannot be undone.`)) {
+        return;
+      }
+
+      const deleteBtn = document.getElementById("deleteBtn");
+      deleteBtn.disabled = true;
+      deleteBtn.innerText = "Deleting...";
+
+      const res = await HostelAPI.deleteRoom(roomId);
+      if (res.success) {
+        showToast(res.message, "success", () => {
+          location.href = "list.html";
+        });
+      } else {
+        showToast(res.message, "error");
+        deleteBtn.disabled = false;
+        deleteBtn.innerText = "🗑️ Permanently Delete Room";
+      }
+    }
+
+    // Support URL param e.g. delete.html?id=101
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('id');
+      if (urlId) {
+        document.getElementById("room_id").value = urlId;
+        checkPreview();
+      }
+    });
+  </script>
+</body>
+</html>

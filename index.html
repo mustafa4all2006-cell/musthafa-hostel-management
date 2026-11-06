@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostel Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">MUSTHAFA HM</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html" class="active">🏠 Home</a>
+        <a href="list.html">📋 List Rooms</a>
+        <a href="listOne.html">🔍 Search Room</a>
+        <a href="insert.html">➕ Insert Room</a>
+        <a href="update.html">✏️ Update Room</a>
+        <a href="delete.html">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Page Title -->
+    <div class="page-title-box">
+      <h1 class="page-title">🏨 Hostel Room Management</h1>
+      <p class="page-subtitle">Manage block allocations, room capacities, statuses, and availability in real-time.</p>
+    </div>
+
+    <!-- Live Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-value" id="totalRoomsCount">-</div>
+          <div class="stat-label">Total Rooms</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background:#eef2ff; color:#4f46e5;">🏢</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-value" id="availableRoomsCount" style="color:#10b981;">-</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background:#ecfdf5; color:#10b981;">✓</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-value" id="occupiedRoomsCount" style="color:#0284c7;">-</div>
+          <div class="stat-label">Occupied</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background:#f0f9ff; color:#0284c7;">👥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-value" id="maintenanceRoomsCount" style="color:#f59e0b;">-</div>
+          <div class="stat-label">Under Maintenance</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background:#fffbeb; color:#f59e0b;">⚠️</div>
+      </div>
+    </div>
+
+    <!-- Quick Action Cards Grid (Mapped to original operations) -->
+    <div class="actions-grid">
+      <a href="list.html" class="action-card">
+        <div class="action-card-icon" style="background:#eef2ff; color:#4f46e5;">📋</div>
+        <div class="action-card-title">1. List All Rooms</div>
+        <div class="action-card-desc">View comprehensive inventory of all hostel rooms, blocks, capacities, and live statuses.</div>
+      </a>
+
+      <a href="listOne.html" class="action-card">
+        <div class="action-card-icon" style="background:#f0fdf4; color:#16a34a;">🔍</div>
+        <div class="action-card-title">2. Search Required Room</div>
+        <div class="action-card-desc">Quickly find specific room details using Room ID or Room Number with instant lookup.</div>
+      </a>
+
+      <a href="insert.html" class="action-card">
+        <div class="action-card-icon" style="background:#fdf4ff; color:#c026d3;">➕</div>
+        <div class="action-card-title">3. Insert New Room</div>
+        <div class="action-card-desc">Add a new room record with Block Name, Room Number, Capacity, and initial Status.</div>
+      </a>
+
+      <a href="update.html" class="action-card">
+        <div class="action-card-icon" style="background:#fff7ed; color:#ea580c;">✏️</div>
+        <div class="action-card-title">4. Update Room</div>
+        <div class="action-card-desc">Modify existing room capacity, block name, or change status (e.g. Available / Occupied).</div>
+      </a>
+
+      <a href="delete.html" class="action-card">
+        <div class="action-card-icon" style="background:#fef2f2; color:#ef4444;">🗑️</div>
+        <div class="action-card-title">5. Delete Room</div>
+        <div class="action-card-desc">Remove an obsolete or decommissioned room permanently from the system records.</div>
+      </a>
+    </div>
+
+    <!-- Quick Preview Table -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+        <div>
+          <h2 style="font-size:1.25rem; font-weight:700;">Hostel Rooms Snapshot</h2>
+          <p style="font-size:0.875rem; color:var(--text-muted);">Recent rooms registered across all blocks</p>
+        </div>
+        <a href="list.html" class="btn btn-secondary" style="padding:0.5rem 1rem; font-size:0.875rem;">View Full List →</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="styled-table" id="snapshotTable">
+          <thead>
+            <tr>
+              <th>Room ID</th>
+              <th>Room No</th>
+              <th>Block Name</th>
+              <th>Capacity</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="snapshotBody">
+            <tr>
+              <td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">Loading rooms...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    async function initDashboard() {
+      const rooms = await HostelAPI.getAllRooms();
+      
+      // Update statistics
+      document.getElementById('totalRoomsCount').textContent = rooms.length;
+      
+      const available = rooms.filter(r => String(r.status).toLowerCase() === 'available').length;
+      const occupied = rooms.filter(r => String(r.status).toLowerCase() === 'occupied').length;
+      const maintenance = rooms.filter(r => String(r.status).toLowerCase().includes('maintenance')).length;
+
+      document.getElementById('availableRoomsCount').textContent = available;
+      document.getElementById('occupiedRoomsCount').textContent = occupied;
+      document.getElementById('maintenanceRoomsCount').textContent = maintenance;
+
+      // Populate snapshot table (first 5 rooms)
+      const tbody = document.getElementById('snapshotBody');
+      if (rooms.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">No rooms found in database.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      rooms.slice(0, 5).forEach(room => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>#${room.room_id}</strong></td>
+            <td><span style="font-weight:600; color:#1e293b;">${room.room_no}</span></td>
+            <td>${room.block_name}</td>
+            <td><span class="capacity-pill">🛏️ ${room.capacity} Bed${room.capacity > 1 ? 's' : ''}</span></td>
+            <td>${renderStatusBadge(room.status)}</td>
+          </tr>
+        `;
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

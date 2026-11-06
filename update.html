@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Hostel Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">CampusStay HMS</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="list.html">📋 List Rooms</a>
+        <a href="listOne.html">🔍 Search Room</a>
+        <a href="insert.html">➕ Insert Room</a>
+        <a href="update.html" class="active">✏️ Update Room</a>
+        <a href="delete.html">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title-box">
+      <h1 class="page-title">✏️ Update Hostel Room Details</h1>
+      <p class="page-subtitle">Fetch an existing room record, adjust block assignment, bed capacity, or update occupancy status.</p>
+    </div>
+
+    <!-- Step 1: Select Room to Update -->
+    <div class="card" style="max-width: 680px; margin: 0 auto 2rem auto;">
+      <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1rem; color:#1e293b;">
+        Step 1: Enter Room ID to Edit
+      </h2>
+
+      <div class="search-bar-container" style="max-width:100%;">
+        <input 
+          type="number" 
+          id="fetch_room_id" 
+          class="form-control" 
+          placeholder="Enter Room ID (e.g. 101, 201)"
+          onkeydown="if(event.key==='Enter') loadRoomForUpdate();"
+        >
+        <button class="btn btn-primary" onclick="loadRoomForUpdate()">
+          📥 Fetch Details
+        </button>
+      </div>
+
+      <!-- Step 2: Form to Modify (Hidden until loaded) -->
+      <div id="updateFormSection" style="display:none; margin-top:2rem; border-top:1px solid #f1f5f9; padding-top:1.5rem;">
+        <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem; color:#1e293b;">
+          Step 2: Modify Room Information
+        </h2>
+
+        <form id="updateRoomForm" onsubmit="event.preventDefault(); submitUpdate();">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="room_id_display">Room ID (Fixed)</label>
+              <input type="text" id="room_id_display" class="form-control" readonly>
+            </div>
+
+            <div class="form-group">
+              <label for="room_no">Room Number <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="room_no" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="block_name">Block Name <span style="color:#ef4444;">*</span></label>
+              <input type="text" id="block_name" list="blockList" class="form-control" required>
+              <datalist id="blockList">
+                <option value="Block A (Ganga)"></option>
+                <option value="Block B (Yamuna)"></option>
+                <option value="Block C (Godavari)"></option>
+                <option value="Block D (Cauvery)"></option>
+                <option value="Executive Wing"></option>
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="capacity">Capacity of Room <span style="color:#ef4444;">*</span></label>
+              <select id="capacity" class="form-control" required>
+                <option value="1">1 Bed (Single Sharing)</option>
+                <option value="2">2 Beds (Double Sharing)</option>
+                <option value="3">3 Beds (Triple Sharing)</option>
+                <option value="4">4 Beds (Four Sharing)</option>
+                <option value="6">6 Beds (Dormitory)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Room Status <span style="color:#ef4444;">*</span></label>
+            <select id="status" class="form-control" required>
+              <option value="Available">🟢 Available</option>
+              <option value="Occupied">🔵 Occupied</option>
+              <option value="Under Maintenance">🟠 Under Maintenance</option>
+            </select>
+          </div>
+
+          <div class="btn-group" style="margin-top:2rem;">
+            <button type="submit" class="btn btn-primary" id="updateSubmitBtn">
+              💾 Update Room
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="location.href='list.html'">
+              📋 View List
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="location.href='index.html'">
+              ← Home Page
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="noRoomFound" style="display:none; padding:1.5rem; text-align:center; background:#fef2f2; border-radius:8px; border:1px solid #fecaca; margin-top:1.5rem;">
+        <span style="color:#b91c1c; font-weight:600;">Room Not Found. Please check the Room ID and try again.</span>
+      </div>
+
+      <div class="btn-group" style="margin-top:1.5rem;" id="initialNavButtons">
+        <button class="btn btn-secondary" onclick="location.href='index.html'">
+          ← Back to Home Page
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    let currentLoadedRoomId = null;
+
+    async function loadRoomForUpdate(targetId = null) {
+      const id = targetId || document.getElementById("fetch_room_id").value.trim();
+      if (!id) {
+        showToast("Please enter a Room ID to load", "error");
+        return;
+      }
+
+      const updateSection = document.getElementById("updateFormSection");
+      const noRoomFound = document.getElementById("noRoomFound");
+
+      const data = await HostelAPI.getRoomById(id);
+      if (!data || data.length === 0) {
+        updateSection.style.display = "none";
+        noRoomFound.style.display = "block";
+        showToast("Room Not Found", "error");
+        return;
+      }
+
+      noRoomFound.style.display = "none";
+      const room = data[0];
+      currentLoadedRoomId = room.room_id;
+
+      document.getElementById("room_id_display").value = "#" + room.room_id;
+      document.getElementById("room_no").value = room.room_no;
+      document.getElementById("block_name").value = room.block_name;
+      document.getElementById("capacity").value = room.capacity;
+      document.getElementById("status").value = room.status;
+
+      updateSection.style.display = "block";
+      showToast(`Loaded details for Room #${room.room_id}`, "success");
+    }
+
+    async function submitUpdate() {
+      if (!currentLoadedRoomId) return;
+
+      const room_no = document.getElementById("room_no").value.trim();
+      const block_name = document.getElementById("block_name").value.trim();
+      const capacity = document.getElementById("capacity").value.trim();
+      const status = document.getElementById("status").value.trim();
+
+      const btn = document.getElementById("updateSubmitBtn");
+      btn.disabled = true;
+      btn.innerText = "Updating...";
+
+      const res = await HostelAPI.updateRoom(currentLoadedRoomId, {
+        room_no,
+        block_name,
+        capacity: Number(capacity),
+        status
+      });
+
+      if (res.success) {
+        showToast(res.message, "success", () => {
+          location.href = "list.html";
+        });
+      } else {
+        showToast(res.message, "error");
+        btn.disabled = false;
+        btn.innerText = "💾 Update Room";
+      }
+    }
+
+    // Support URL param e.g. update.html?id=101
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('id');
+      if (urlId) {
+        document.getElementById("fetch_room_id").value = urlId;
+        loadRoomForUpdate(urlId);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Hostel Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">MUSTHAFA HM</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="list.html">📋 List Rooms</a>
+        <a href="listOne.html" class="active">🔍 Search Room</a>
+        <a href="insert.html">➕ Insert Room</a>
+        <a href="update.html">✏️ Update Room</a>
+        <a href="delete.html">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title-box">
+      <h1 class="page-title">🔍 Search Required Room</h1>
+      <p class="page-subtitle">Lookup a specific room record by its unique Room ID or Room Number.</p>
+    </div>
+
+    <!-- Search Form Card -->
+    <div class="card">
+      <h2 style="font-size:1.15rem; font-weight:700; margin-bottom:1rem;">Search Room Details</h2>
+      
+      <div class="search-bar-container">
+        <input 
+          type="text" 
+          id="searchParam" 
+          class="form-control" 
+          placeholder="Enter Room ID (e.g. 101) or Room No (e.g. A-101)"
+          onkeydown="if(event.key==='Enter') searchRoom();"
+        >
+        <button class="btn btn-primary" onclick="searchRoom()">
+          🔍 Search
+        </button>
+      </div>
+
+      <!-- Result Container -->
+      <div id="resultContainer" style="margin-top:1.5rem; display:none;">
+        <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.75rem; color:#334155;">Search Result:</h3>
+        
+        <div class="table-responsive">
+          <table class="styled-table" id="roomTable">
+            <thead>
+              <tr>
+                <th>Room ID</th>
+                <th>Room No</th>
+                <th>Block Name</th>
+                <th>Capacity of Room</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody">
+              <!-- Result inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="noResultBox" style="display:none; padding:2rem; text-align:center; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1; margin-top:1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">🔎</div>
+        <strong style="color:#ef4444; font-size:1rem;">Room Not Found</strong>
+        <p style="color:var(--text-muted); font-size:0.875rem; margin-top:0.25rem;">Please check the Room ID or Room Number and try again.</p>
+      </div>
+
+      <div class="btn-group" style="margin-top:2rem;">
+        <button class="btn btn-secondary" onclick="location.href='index.html'">
+          ← Back to Home Page
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    async function searchRoom() {
+      const searchParam = document.getElementById("searchParam").value.trim();
+      
+      if (!searchParam) {
+        showToast("Please enter a Room ID or Room Number to search", "error");
+        return;
+      }
+
+      const resultContainer = document.getElementById("resultContainer");
+      const noResultBox = document.getElementById("noResultBox");
+      const resultBody = document.getElementById("resultBody");
+
+      try {
+        const data = await HostelAPI.getRoomById(searchParam);
+
+        if (!data || data.length === 0) {
+          resultContainer.style.display = "none";
+          noResultBox.style.display = "block";
+          showToast("Room Not Found", "error");
+          return;
+        }
+
+        const room = data[0];
+        noResultBox.style.display = "none";
+        resultContainer.style.display = "block";
+
+        resultBody.innerHTML = `
+          <tr>
+            <td><strong style="color:var(--primary);">#${room.room_id}</strong></td>
+            <td><span style="font-weight:600; color:#1e293b;">${room.room_no}</span></td>
+            <td>${room.block_name}</td>
+            <td><span class="capacity-pill">🛏️ ${room.capacity} Bed${room.capacity > 1 ? 's' : ''}</span></td>
+            <td>${renderStatusBadge(room.status)}</td>
+            <td style="text-align:right;">
+              <a href="update.html?id=${room.room_id}" class="btn btn-secondary" style="padding:0.35rem 0.65rem; font-size:0.8rem; margin-right:0.3rem;">✏️ Edit</a>
+              <a href="delete.html?id=${room.room_id}" class="btn btn-danger" style="padding:0.35rem 0.65rem; font-size:0.8rem;">🗑️ Delete</a>
+            </td>
+          </tr>
+        `;
+
+        showToast("Room details retrieved successfully", "success");
+      } catch (err) {
+        console.error("Search error:", err);
+        showToast("Error retrieving room details", "error");
+      }
+    }
+  </script>
+</body>
+</html>

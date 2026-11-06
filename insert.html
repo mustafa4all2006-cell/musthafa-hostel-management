@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insert Hostel Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-title">MUSTHAFA HM</div>
+          <div class="brand-subtitle">Hostel Management Portal</div>
+        </div>
+      </a>
+      <nav class="app-nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="list.html">📋 List Rooms</a>
+        <a href="listOne.html">🔍 Search Room</a>
+        <a href="insert.html" class="active">➕ Insert Room</a>
+        <a href="update.html">✏️ Update Room</a>
+        <a href="delete.html">🗑️ Delete Room</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-title-box">
+      <h1 class="page-title">➕ Insert New Hostel Room</h1>
+      <p class="page-subtitle">Add a newly configured room with block name, bed capacity, and initial occupancy status.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card" style="max-width: 680px; margin: 0 auto 2rem auto;">
+      <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:1.5rem; color:#1e293b; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
+        Room Details
+      </h2>
+
+      <form id="insertRoomForm" onsubmit="event.preventDefault(); saveRoom();">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="room_id">Room ID <span style="color:#ef4444;">*</span></label>
+            <input 
+              type="number" 
+              id="room_id" 
+              class="form-control" 
+              placeholder="e.g. 104, 205" 
+              required
+            >
+            <small style="color:var(--text-muted); font-size:0.75rem;">Unique numeric identifier</small>
+          </div>
+
+          <div class="form-group">
+            <label for="room_no">Room Number <span style="color:#ef4444;">*</span></label>
+            <input 
+              type="text" 
+              id="room_no" 
+              class="form-control" 
+              placeholder="e.g. A-104, B-205" 
+              required
+            >
+            <small style="color:var(--text-muted); font-size:0.75rem;">Display room label on door</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="block_name">Block Name <span style="color:#ef4444;">*</span></label>
+            <input 
+              type="text" 
+              id="block_name" 
+              list="blockList" 
+              class="form-control" 
+              placeholder="Select or type block name" 
+              required
+            >
+            <datalist id="blockList">
+              <option value="Block A (Ganga)"></option>
+              <option value="Block B (Yamuna)"></option>
+              <option value="Block C (Godavari)"></option>
+              <option value="Block D (Cauvery)"></option>
+              <option value="Executive Wing"></option>
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label for="capacity">Capacity of Room <span style="color:#ef4444;">*</span></label>
+            <select id="capacity" class="form-control" required>
+              <option value="">Select bed capacity</option>
+              <option value="1">1 Bed (Single Sharing)</option>
+              <option value="2" selected>2 Beds (Double Sharing)</option>
+              <option value="3">3 Beds (Triple Sharing)</option>
+              <option value="4">4 Beds (Four Sharing)</option>
+              <option value="6">6 Beds (Dormitory)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Initial Status <span style="color:#ef4444;">*</span></label>
+          <select id="status" class="form-control" required>
+            <option value="Available" selected>🟢 Available</option>
+            <option value="Occupied">🔵 Occupied</option>
+            <option value="Under Maintenance">🟠 Under Maintenance</option>
+          </select>
+        </div>
+
+        <div class="btn-group" style="margin-top:2rem;">
+          <button type="submit" class="btn btn-primary" id="saveBtn">
+            💾 Save Room Record
+          </button>
+          <button type="reset" class="btn btn-secondary">
+            🔄 Reset
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="location.href='index.html'">
+            ← Home Page
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Hostel Management System &bull; Room ID, Room No, Block Name, Capacity, Status Portal
+  </footer>
+
+  <div id="toast"></div>
+
+  <script src="client-api.js"></script>
+  <script>
+    async function saveRoom() {
+      const room_id = document.getElementById("room_id").value.trim();
+      const room_no = document.getElementById("room_no").value.trim();
+      const block_name = document.getElementById("block_name").value.trim();
+      const capacity = document.getElementById("capacity").value.trim();
+      const status = document.getElementById("status").value.trim();
+
+      if (!room_id || !room_no || !block_name || !capacity || !status) {
+        showToast("Please fill in all room fields.", "error");
+        return;
+      }
+
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
+      saveBtn.innerText = "Saving...";
+
+      const res = await HostelAPI.insertRoom({
+        room_id: Number(room_id),
+        room_no: room_no,
+        block_name: block_name,
+        capacity: Number(capacity),
+        status: status
+      });
+
+      if (res.success) {
+        showToast(res.message, "success", () => {
+          location.href = "list.html";
+        });
+      } else {
+        showToast(res.message, "error");
+        saveBtn.disabled = false;
+        saveBtn.innerText = "💾 Save Room Record";
+      }
+    }
+  </script>
+</body>
+</html>
